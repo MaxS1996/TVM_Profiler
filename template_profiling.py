@@ -21,6 +21,8 @@ from components import serializer
 from components import profiling
 
 #####################################################
+dataset_path = "/home/s0144002/DIR/ssd/s0144002-TVMMapper/TVM_Profiling_Dataset/dataset"
+#####################################################
 
 import sys, getopt
 import argparse
@@ -82,13 +84,12 @@ if not input_path is None:
 if partition == "alpha":
     from config_alpha import *
 
-
 elif partition == "haswell":
     from config_haswell import *
-'''
+
 elif partition == "gpu2":
     from config_gpu2 import *
-'''
+
 
 samples_base_path = "./configs"
 if workload == "conv2d":
@@ -149,9 +150,10 @@ configs = {}
 for workload_path in workload_paths:
     with open(samples_base_path+"/"+workload_path) as file:
         configs.update(json.load(file))
-        print(type(configs))
+        print(len(configs))
 print(len(configs))
 
+'''
 if workload == "dense":
     #expand search space
     print("artifically extending search space")
@@ -165,6 +167,7 @@ if workload == "dense":
             new_configs[name+"_"+str(new_config["units"])] = deepcopy(new_config)
     configs = new_configs
     print("new sample count:", len(configs))
+'''
 
 measurements = {}
 
@@ -181,7 +184,7 @@ for name, config in configs.items():
             workload = config["workload"]
             layer_name = workload
 
-        file = "dataset/"+target_class+"_"+device+"/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
+        file = dataset_path+"/"+target_class+"_"+device+"/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
         folders = file.split("/")[0:-1]
         tmp = folders[0]
         
@@ -466,7 +469,7 @@ for name, config in configs.items():
         with open(file, "w") as f:
             f.write(json_text)
             print("profiling run completed")
-        exit()
+        #exit()
 
 print("profiling done")
             
