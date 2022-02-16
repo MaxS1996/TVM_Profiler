@@ -1,5 +1,5 @@
 # Recorded Dataset, should be in another repository
-dataset/*.json
+dataset/
 
 # Job Script Logs
 *.log
