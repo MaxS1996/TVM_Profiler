@@ -90,6 +90,7 @@ elif partition == "gpu2":
     from config_gpu2 import *
 '''
 
+samples_base_path = "./configs"
 if workload == "conv2d":
     workload_paths = ["conv_layer_config_clean.json"]
     layer_name = "conv2d"
@@ -146,7 +147,7 @@ if partition != "haswell":
 import json
 configs = {}
 for workload_path in workload_paths:
-    with open(workload_path) as file:
+    with open(samples_base_path+"/"+workload_path) as file:
         configs.update(json.load(file))
         print(type(configs))
 print(len(configs))
