@@ -13,7 +13,7 @@ dense_extension = [2,3]
 #target and device config
 target = "cuda"
 target_class = "cuda"
-device = "A100"
+device = "K80"
 dev_idx = 0
 dev = tvm.device(str("cuda"), dev_idx)
 
@@ -21,7 +21,7 @@ dev = tvm.device(str("cuda"), dev_idx)
 
 papi_base = "nvml:::Tesla_K80:device_"
 metrics = []
-if device == "A100":
+if device == "K80":
     metrics = profiling.get_metrics(target, device, backend="nvml", dev_idx=dev_idx)
     metrics.append(papi_base+str(dev_idx)+":gpu_utilization")
     metrics.append(papi_base+str(dev_idx)+":memory_utilization")
