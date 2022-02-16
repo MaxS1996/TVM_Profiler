@@ -25,5 +25,5 @@ export PYTHONPATH=$TVM_HOME/python:${PYTHONPATH}
 
 export PAPI_CUDA_ROOT=$CUDA_ROOT
 
-cd ~/DIR/ssd/s0144002-TVMMapper/new_testing
+cd ~/DIR/ssd/s0144002-TVMMapper/TVM_Profiler
 python3 template_profiling.py -w depthwise_conv2d

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --partition=alpha
-#SBATCH --job-name=TVMquick
+#SBATCH --job-name=dilated_TVMquick
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=s0144002@msx.tu-dresden.de
 #SBATCH --ntasks=1
@@ -8,7 +8,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem-per-cpu=11000
 #SBATCH --time=24:00:00
-#SBATCH --output=dilated_template_runner.log
+#SBATCH --output=template_runner_dilated_%j.log
 pwd; hostname; date
 
 echo "Running TVM dense grid search profiler on $SLURM_CPUS_ON_NODE CPU cores"
@@ -25,5 +25,5 @@ export PYTHONPATH=$TVM_HOME/python:${PYTHONPATH}
 
 export PAPI_CUDA_ROOT=$CUDA_ROOT
 
-cd ~/DIR/ssd/s0144002-TVMMapper/new_testing
-python3 template_profiling.py -w dilated_conv2d
+cd ~/DIR/ssd/s0144002-TVMMapper/TVM_Profiler
+python3 template_profiling.py -t alpha -w dilated_conv2d
