@@ -19,7 +19,7 @@ dev = tvm.device(str("cuda"), dev_idx)
 
 # profiling metrics
 
-papi_base = "nvml:::Tesla_K80:device_"
+papi_base = "nvml:::NVIDIA_A100-SXM4-40GB:device_"
 metrics = []
 if device == "A100":
     metrics = profiling.get_metrics(target, device, backend="nvml", dev_idx=dev_idx)
