@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=24
 #SBATCH --mem-per-cpu=2541
-#SBATCH --time=8:00:00
+#SBATCH --time=33:00:00
 #SBATCH --output=template_runner_haswell_conv2d_%j.log
 pwd; hostname; date
 

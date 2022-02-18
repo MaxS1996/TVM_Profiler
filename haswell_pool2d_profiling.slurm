@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=24
 #SBATCH --mem-per-cpu=2541
-#SBATCH --time=8:00:00
+#SBATCH --time=33:00:00
 #SBATCH --output=template_runner_haswell_pool2d_%j.log
 pwd; hostname; date
 
@@ -23,4 +23,6 @@ export PYTHONPATH=$TVM_HOME/python:${PYTHONPATH}
 
 
 cd ~/DIR/ssd/s0144002-TVMMapper/TVM_Profiler
-python3 template_profiling.py -t haswell -w pool2d
+until python3 template_profiling.py -t haswell -w pool2d; do
+	echo "Failed with $?"
+done

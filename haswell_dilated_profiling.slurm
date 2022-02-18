@@ -1,16 +1,16 @@
 #!/bin/bash
 #SBATCH --partition=haswell64
-#SBATCH --job-name=depthwise_conv2d_TVMquick
+#SBATCH --job-name=dilated_conv2d_TVMquick
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=s0144002@msx.tu-dresden.de
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=24
 #SBATCH --mem-per-cpu=2541
-#SBATCH --time=8:00:00
-#SBATCH --output=template_runner_haswell_depthwise_conv2d_%j.log
+#SBATCH --time=33:00:00
+#SBATCH --output=template_runner_haswell_dilated_conv2d_%j.log
 pwd; hostname; date
 
-echo "Running TVM depthwise_conv2d grid search profiler on $SLURM_CPUS_ON_NODE CPU cores"
+echo "Running TVM dilated_conv2d grid search profiler on $SLURM_CPUS_ON_NODE CPU cores"
 echo ""
 echo "Date              = $(date)"
 echo "Hostname          = $(hostname -s)"
@@ -23,4 +23,4 @@ export PYTHONPATH=$TVM_HOME/python:${PYTHONPATH}
 
 
 cd ~/DIR/ssd/s0144002-TVMMapper/TVM_Profiler
-python3 template_profiling.py -t haswell -w depthwise_conv2d
+python3 template_profiling.py -t haswell -w dilated_conv2d
