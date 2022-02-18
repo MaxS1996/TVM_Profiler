@@ -1,8 +1,6 @@
 # IMPORTS from tvm, different required packages and the profiling infrastructure
 
-from calendar import c
 from copy import deepcopy
-from numpy.core.numeric import full
 import tvm
 from tvm.contrib import utils, graph_executor as runtime
 from tvm.contrib.debugger import debug_executor as graph_runtime
@@ -14,7 +12,6 @@ from func_timeout import func_timeout
 import time
 import json
 import sys
-import getopt
 #####
 from components import description_vector as dv
 from components import serializer
@@ -294,16 +291,12 @@ for name, config in configs.items():
             print("compile failed")
             break
  
-        try:
-            debug_g_mod = graph_runtime.GraphModuleDebug(
-                compiled_graph_lib["debug_create"]("default", dev),
-                [dev],
-                compiled_graph_lib.get_graph_json(),
-                "."
-            )
-        except:
-            print("runtime construction failed")
-            break
+        debug_g_mod = graph_runtime.GraphModuleDebug(
+            compiled_graph_lib["debug_create"]("default", dev),
+            [dev],
+            compiled_graph_lib.get_graph_json(),
+            "."
+        )
         
         if workload != "dense":
             out_shape = debug_g_mod.debug_datum._shapes_list[-1][-1]
