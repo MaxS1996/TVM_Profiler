@@ -137,3 +137,4 @@ dmypy.json
 .pyre/
 _tvmdbg_device_CPU_0/_tvmdbg_graph_dump.json
 _tvmdbg_device_CUDA_0/_tvmdbg_graph_dump.json
+_tvmdbg_device_CUDA_1/_tvmdbg_graph_dump.json

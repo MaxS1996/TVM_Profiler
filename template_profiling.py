@@ -43,7 +43,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument(
         "-t",
         "--target",
-        default="alpha",
+        default="980ti",
         help="The target device, you want to compile for and profile on.")
     parser.add_argument(
         "-w",
@@ -86,6 +86,9 @@ elif partition == "haswell":
 
 elif partition == "gpu2":
     from config_gpu2 import *
+
+elif partition == "980ti":
+    from config_980ti import *
 
 
 samples_base_path = "./configs"
