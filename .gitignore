@@ -1,5 +1,6 @@
 # Recorded Dataset, should be in another repository
 dataset/
+precompiled/
 
 # Job Script Logs
 *.log
