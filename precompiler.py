@@ -33,7 +33,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument(
         "-w",
         "--workload",
-        default="conv2d",
+        default="dilated_conv2d",
         help="The layer type you want to profile (conv2d, dilated_conv2d, depthwise_conv2d, max_pool2d, avg_pool2d, dense.")
     options = parser.parse_args(args)
     return options
@@ -92,6 +92,8 @@ for dataset_path in dataset_paths:
     with open(samples_base_path+"/"+dataset_path, "r") as file:
         raw = file.read()
         dataset.update(json.loads(raw))
+        print(len(dataset))
+print(len(dataset))
 
 print("import complete")
 
@@ -100,7 +102,7 @@ for name, config in dataset.items():
 
     config["data_layout"] = data_layout
     config["kernel_layout"] = kernel_layout
-    config["workload"] = workload
+    #config["workload"] = workload
     
     for batch_size in batch_sizes:
         path = storage_location + "/" + target + "/" + workload + "/"+ name.replace(":", "-").replace("/", "-").replace(".json", "") + "_" + str(batch_size)
@@ -196,26 +198,24 @@ for name, config in dataset.items():
             if not "strides" in config.keys():
                 config["strides"] = config["stride"]
 
-        if workload == "avg_pool2d":
+        if config["workload"] == "avg_pool2d":
             expr = avg_pool2d(
                 data=x,
                 pool_size=config["pool_size"],
                 strides=config["strides"],
                 padding=0,
                 dilation=1,
-                layout=data_layout,
-                out_layout=data_layout
+                layout=data_layout
             )
 
-        elif workload == "max_pool2d":
+        elif config["workload"] == "max_pool2d":
             expr = max_pool2d(
                 data=x,
                 pool_size=config["pool_size"],
                 strides=config["strides"],
                 padding=0,
                 dilation=1,
-                layout=data_layout,
-                out_layout=data_layout
+                layout=data_layout
             )
         
         try:
