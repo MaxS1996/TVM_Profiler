@@ -96,7 +96,15 @@ if workload == "conv2d":
     workload_paths = ["conv_layer_config_clean.json"]
     layer_name = "conv2d"
 elif workload == "depthwise_conv2d":
-    workload_paths = ["depthwise_conv_layer_config_clean.json"]
+    workload_paths = [
+        "depthwise_conv_layer_config_clean.json",
+        "depthwise_8_conv_layer_config_clean.json",
+        "depthwise_16_conv_layer_config_clean.json",
+        "depthwise_32_conv_layer_config_clean.json",
+        "depthwise_128_conv_layer_config_clean.json",
+        "depthwise_256_conv_layer_config_clean.json",
+        "depthwise_512_conv_layer_config_clean.json",
+    ]
     layer_name = "conv2d"
 elif workload == "dilated_conv2d":
     workload_paths = [
