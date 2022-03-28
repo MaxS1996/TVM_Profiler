@@ -55,6 +55,7 @@ supported_targets = [
     "haswell",
     "gpu2",
     "980ti",
+    "test",
 ]
 
 iterations = 10
@@ -64,7 +65,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument(
         "-t",
         "--target",
-        default="haswell",
+        default="test",
         help="The target device, you want to compile for and profile on.")
     parser.add_argument(
         "-w",
@@ -100,6 +101,9 @@ elif partition == "gpu2":
 
 elif partition == "980ti":
     from config_980ti import *
+
+elif partition == "test":
+    from config_test import *
 
 #####################################################
 
@@ -226,11 +230,14 @@ for batch_size in batch_sizes:
     for idx, node in enumerate(debug_g_mod.debug_datum._nodes_list):
         
         func_name = "param"
+        hash_val = ""
         if node["op"] != "param":
             func_name = node["attrs"]["func_name"]
+            hash_val = node["attrs"]["hash"]
         layers[node["name"]] = {
             "time" : float(times[idx])*1000,
             "func_name" : func_name,
+            "hash" : hash_val
         }
         layer_order.append(node["name"])
     print("measured", len(layers), "individual layers")
@@ -266,8 +273,35 @@ for batch_size in batch_sizes:
     p_start = time.monotonic()
     for r in range(0, iterations):        
         # reload the Metric Collector due to issues with the PAPI backend
-        data_collector = get_data_collector(dev, metrics)
+        #data_collector = get_data_collector(dev, metrics)
         
         # run debug runtime with time measurements only
         with suppress_stdout():
-            test_data = debug_g_mod.profile(collectors=[data_collector], runs=runs, **inp_dict)
+            #test_data = debug_g_mod.profile(collectors=[data_collector], runs=runs, **inp_dict)
+            test_data = debug_g_mod.profile(collectors=[], runs=runs, **inp_dict)
+
+        for call in test_data.calls:
+            if not "Percent" in layers[call["Name"]].keys():
+                layers[call["Name"]]["Percent"] = []
+            layers[call["Name"]]["Percent"].append(call["Percent"].percent)
+            for metric in metrics:
+                if not metric in layers[call["Name"]].keys():
+                    layers[call["Name"]][metric] = []
+                layers[call["Name"]][metric].append(call[metric].value)
+    
+    print(layers)
+    print("batch size done")
+
+    collected_data = {
+        "name" : model_name,
+        "batch_size" : batch_size,
+        "target" : target,
+        "device" : device,
+        "data" : layers,
+        "total_time" : full_time
+    }
+
+    json_text = json.dumps(collected_data)
+    with open(file, "w") as f:
+        f.write(json_text)
+    #exit()
