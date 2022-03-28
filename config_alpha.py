@@ -5,7 +5,7 @@ from components import profiling
 repeat = 1024
 data_layout = "NCHW"
 kernel_layout = "OIHW"
-batch_sizes = [1, 16, 32, 64, 128]
+batch_sizes = [1, 16, 32, 64, 128, 256, 512, 1024]
 dense_extension = [2,3]
 
 # defining important variables for the profiling system

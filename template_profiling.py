@@ -19,6 +19,7 @@ from components import profiling
 
 #####################################################
 dataset_path = "/home/s0144002/DIR/ssd/s0144002-TVMMapper/TVM_Profiling_Dataset/dataset"
+#dataset_path = "/home/s0144002/DIR/ssd/s0144002-TVMMapper/TVM_Profiler/testing"
 #####################################################
 
 import sys, getopt
@@ -78,7 +79,8 @@ if not input_path is None:
     print("Additional Input File:",input_path)
 
 #####################################################
-
+iterations = 10
+#####################################################
 if partition == "alpha":
     from config_alpha import *
 
@@ -357,10 +359,10 @@ for name, config in configs.items():
                 actual_layer_name = node["op"]
         
         print("layer_time", layer_time)
-        runs = int(max(1, np.ceil(time_min_res / (layer_time/1000))))
+        runs = int(max(1, np.ceil(time_min_res / (layer_time/1000)))*1.5)
 
         # determine the noise
-        iterations = 10
+
         powers = []
         power_normalizer = 1
         if partition != "haswell":
@@ -449,21 +451,24 @@ for name, config in configs.items():
         #calculate Z-Score
         z_scores = ((np.array(powers)/power_normalizer) - avg_power)/std_power
         cleaned_powers = []
-        threshold = 0.25
 
-        attempts = 0
-        while len(cleaned_powers) < 3 and attempts < 5:
-            attempts += 1
-            cleaned_powers = []
-            threshold += 0.05
-            for idx, score in enumerate(z_scores):
-                if abs(score) < threshold:
-                    cleaned_powers.append(powers[idx]/power_normalizer)
-        
-        if len(cleaned_powers) == 0:
-            layer_power = np.max(powers)/power_normalizer
+        if partition != "haswell":
+            threshold = 0.25
+            attempts = 0
+            while len(cleaned_powers) < 3 and attempts < 7:
+                attempts += 1
+                cleaned_powers = []
+                threshold += 0.05
+                for idx, score in enumerate(z_scores):
+                    if abs(score) < threshold:
+                        cleaned_powers.append(powers[idx]/power_normalizer)
+            
+            if len(cleaned_powers) == 0:
+                layer_power = np.max(powers)/power_normalizer
+            else:
+                layer_power = np.median(cleaned_powers)
         else:
-            layer_power = np.median(cleaned_powers)
+            layer_power = np.max(powers)/power_normalizer
         
         if partition != "haswell":
             layer_memory = np.median(alloc_memory)/(1024**3)
@@ -471,6 +476,19 @@ for name, config in configs.items():
             layer_memory = -1
 
         #print()
+        print(layers)
+        print("raw readings:")
+        print(powers)
+        print()
+        print("outlier removed powers:")
+        print(cleaned_powers)
+        #print("threshold:")
+        #print(threshold)
+        print()
+        print("final label:")
+        print(layer_power)
+        #input("c")
+
         measurements[name+"_"+str(batch_size)] = (layer_time, layer_power, layer_memory)
         config["layers"] = layers
         print("layers:", len(test_data.calls), len(layers))
