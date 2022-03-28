@@ -5,7 +5,7 @@ from components import profiling
 repeat = 1024
 data_layout = "NCHW"
 kernel_layout = "OIHW"
-batch_sizes = [1, 16, 32, 64, 128]
+batch_sizes = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 dense_extension = [2, 3]
 
 # defining important variables for the profiling system
@@ -35,7 +35,8 @@ def get_data_collector(dev, metrics, component="hdeem"):
     return collector
 
 # sampling resolution
-time_min_res = 0.2
+time_min_res = 0.3
+iterations = 50
 
 ### currently unused
 state_path = "./states"
