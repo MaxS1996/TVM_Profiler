@@ -1,0 +1,1 @@
+{"sequential_1:flatten_1": {"workload": "flatten", "input shape": [null, 4, 4, 64], "output shape": [null, 1024]}}

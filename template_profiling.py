@@ -31,6 +31,7 @@ workload_options = [
     "depthwise_conv2d",
     "pool2d",
     "dense",
+    "test_set",
     ]
 
 supported_targets = [
@@ -94,6 +95,7 @@ elif partition == "980ti":
 
 
 samples_base_path = "./configs"
+is_test_set = False
 if workload == "conv2d":
     workload_paths = ["conv_layer_config_clean.json"]
     layer_name = "conv2d"
@@ -127,7 +129,25 @@ elif workload == "pool2d":
         "max_pool_layer_config_clean.json",
         "rand_pool.json",
         ]
+elif workload == "test_set":
+    is_test_set = True
+    samples_base_path = "./test_set"
+    dataset_paths = [
+        "alexnet_conv_configs.json",
+        "alexnet_dense_configs.json",
+        "alexnet_max-pool_configs.json",
+        #"alexnet_unknown_configs.json",
 
+        "darknet-19_conv_configs.json",
+        "darknet-19_dense_configs.json",
+        "darknet-19_max-pool_configs.json",
+        #"darknet-19_unknown_configs.json",
+
+        "mnist_net_conv_configs.json",
+        "mnist_net_dense_configs.json",
+        "mnist_net_max-pool_configs.json",
+        #"mnist_net_unknown_configs.json",
+    ]
 if not input_path is None:
     workload_paths.append(input_path)
 
@@ -194,7 +214,10 @@ for name, config in configs.items():
             workload = config["workload"]
             layer_name = workload
 
-        file = dataset_path+"/"+target_class+"_"+device+"/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
+        if is_test_set:
+            file = dataset_path+"/"+target_class+"_"+device+"/test_set/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
+        else:
+            file = dataset_path+"/"+target_class+"_"+device+"/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
         folders = file.split("/")[0:-1]
         tmp = folders[0]
         

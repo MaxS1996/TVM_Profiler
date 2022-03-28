@@ -1,0 +1,1 @@
+{"sequential_1:dense_4": {"units": 100, "input shape": [null, 1024], "output shape": [null, 100], "output dtype": "float32", "compute dtype": "float32", "workload": "dense"}, "sequential_1:dense_5": {"units": 10, "input shape": [null, 100], "output shape": [null, 10], "output dtype": "float32", "compute dtype": "float32", "workload": "dense"}}
