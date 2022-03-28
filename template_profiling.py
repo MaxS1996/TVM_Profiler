@@ -93,6 +93,7 @@ elif partition == "980ti":
 
 
 samples_base_path = "./configs"
+is_test_set = False
 if workload == "conv2d":
     workload_paths = ["conv_layer_config_clean.json"]
     layer_name = "conv2d"
@@ -127,6 +128,7 @@ elif workload == "pool2d":
         "rand_pool.json",
         ]
 elif workload == "test_set":
+    is_test_set = True
     samples_base_path = "./test_set"
     dataset_paths = [
         "alexnet_conv_configs.json",
@@ -210,7 +212,10 @@ for name, config in configs.items():
             workload = config["workload"]
             layer_name = workload
 
-        file = dataset_path+"/"+target_class+"_"+device+"/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
+        if is_test_set:
+            file = dataset_path+"/"+target_class+"_"+device+"/test_set/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
+        else:
+            file = dataset_path+"/"+target_class+"_"+device+"/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
         folders = file.split("/")[0:-1]
         tmp = folders[0]
         
