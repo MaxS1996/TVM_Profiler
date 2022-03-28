@@ -30,6 +30,7 @@ workload_options = [
     "depthwise_conv2d",
     "pool2d",
     "dense",
+    "test_set",
     ]
 
 supported_targets = [
@@ -125,7 +126,24 @@ elif workload == "pool2d":
         "max_pool_layer_config_clean.json",
         "rand_pool.json",
         ]
+elif workload == "test_set":
+    samples_base_path = "./test_set"
+    dataset_paths = [
+        "alexnet_conv_configs.json",
+        "alexnet_dense_configs.json",
+        "alexnet_max-pool_configs.json",
+        #"alexnet_unknown_configs.json",
 
+        "darknet-19_conv_configs.json",
+        "darknet-19_dense_configs.json",
+        "darknet-19_max-pool_configs.json",
+        #"darknet-19_unknown_configs.json",
+
+        "mnist_net_conv_configs.json",
+        "mnist_net_dense_configs.json",
+        "mnist_net_max-pool_configs.json",
+        #"mnist_net_unknown_configs.json",
+    ]
 if not input_path is None:
     workload_paths.append(input_path)
 
