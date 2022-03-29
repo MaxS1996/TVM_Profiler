@@ -65,7 +65,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument(
         "-t",
         "--target",
-        default="test",
+        default="alpha",
         help="The target device, you want to compile for and profile on.")
     parser.add_argument(
         "-w",
@@ -207,6 +207,7 @@ for batch_size in batch_sizes:
     print(model_name, "converted to Relay")
 
     with tvm.transform.PassContext(opt_level=3):
+        print(target_class)
         compiled_graph_lib = tvm.relay.build_module.build(mod, target_class, params=params)
         #compiled_graph_lib = relay.build_module.create_executor("graph", mod, dev, target_class, params)
 
@@ -273,14 +274,16 @@ for batch_size in batch_sizes:
     p_start = time.monotonic()
     for r in range(0, iterations):        
         # reload the Metric Collector due to issues with the PAPI backend
-        #data_collector = get_data_collector(dev, metrics)
+        data_collector = get_data_collector(dev, metrics)
         
         # run debug runtime with time measurements only
         with suppress_stdout():
-            #test_data = debug_g_mod.profile(collectors=[data_collector], runs=runs, **inp_dict)
-            test_data = debug_g_mod.profile(collectors=[], runs=runs, **inp_dict)
+            test_data = debug_g_mod.profile(collectors=[data_collector], runs=runs, **inp_dict)
+            #test_data = debug_g_mod.profile(collectors=[], runs=runs, **inp_dict)
 
         for call in test_data.calls:
+            #print(call)
+            #input()
             if not "Percent" in layers[call["Name"]].keys():
                 layers[call["Name"]]["Percent"] = []
             layers[call["Name"]]["Percent"].append(call["Percent"].percent)
@@ -298,7 +301,8 @@ for batch_size in batch_sizes:
         "target" : target,
         "device" : device,
         "data" : layers,
-        "total_time" : full_time
+        "order" : layer_order,
+        "total_time" : full_time,
     }
 
     json_text = json.dumps(collected_data)
