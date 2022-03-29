@@ -108,13 +108,64 @@ elif partition == "test":
 #####################################################
 
 if workload == "alexnet":
-    from mxnet.gluon.model_zoo import vision
+    '''from mxnet.gluon.model_zoo import vision
     alexnet = vision.alexnet(pretrained=True)
 
     model_name = "alexnet"
     model_source = "mxnet"
     input_name = "data"
+    input_shape = [3,224,224]'''
+    model_name = "alexnet"
+    model_source = "keras"
+    input_name = "datinput_1a"
     input_shape = [3,224,224]
+    
+    img_inputs = keras.Input(shape=(224, 224, 3))
+    # 1st Convolutional Layer
+    x = Conv2D(filters=96, kernel_size=(11,11), strides=(4,4), padding='valid')(img_inputs)
+    x = Activation('relu')(x)
+    # Pooling 
+    x = MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='valid')(x)
+
+    # 2nd Convolutional Layer
+    x = Conv2D(filters=256, kernel_size=(11,11), strides=(1,1), padding='valid')(x)
+    x = Activation('relu')(x)
+    # Pooling
+    x = MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='valid')(x)
+
+    # 3rd Convolutional Layer
+    x = Conv2D(filters=384, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Activation('relu')(x)
+
+    # 4th Convolutional Layer
+    x = Conv2D(filters=384, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Activation('relu')(x)
+
+    # 5th Convolutional Layer
+    x = Conv2D(filters=256, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Activation('relu')(x)
+    # Pooling
+    x = MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='valid')(x)
+
+    # Passing it to a dense layer
+    x = Flatten()(x)
+    # 1st Dense Layer
+    x = Dense(4096, input_shape=(224*224*3,))(x)
+    x = Activation('relu')(x)
+
+    # 2nd Dense Layer
+    x = Dense(4096)(x)
+    x = Activation('relu')(x)
+
+    # 3rd Dense Layer
+    x = Dense(1000)(x)
+    x = Activation('relu')(x)
+
+    # Output Layer
+    x = Dense(17)(x)
+    x = Activation('softmax')(x)
+
+    model = keras.Model(inputs=[img_inputs], outputs=x, name="alexnet")
 
 if workload == "mnist_net":
     model_name = "mnist_net"
