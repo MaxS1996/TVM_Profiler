@@ -130,9 +130,10 @@ elif workload == "pool2d":
         "rand_pool.json",
         ]
 elif workload == "test_set":
+    print("test set is going to be profiled")
     is_test_set = True
     samples_base_path = "./test_set"
-    dataset_paths = [
+    workload_paths = [
         "alexnet_conv_configs.json",
         "alexnet_dense_configs.json",
         "alexnet_max-pool_configs.json",
@@ -183,6 +184,8 @@ for workload_path in workload_paths:
         print(len(configs))
 print(len(configs))
 
+print(configs)
+
 '''
 if workload == "dense":
     #expand search space
@@ -210,11 +213,13 @@ for name, config in configs.items():
         print()
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(sample_idx, name, batch_size)
+
+        workload = config["workload"]
         if "pool" in workload:
-            workload = config["workload"]
             layer_name = workload
 
         if is_test_set:
+            layer_name = config["workload"]
             file = dataset_path+"/"+target_class+"_"+device+"/test_set/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
         else:
             file = dataset_path+"/"+target_class+"_"+device+"/"+workload + "/" + name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"

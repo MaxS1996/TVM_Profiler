@@ -109,7 +109,7 @@ elif partition == "test":
 
 if workload == "alexnet":
     '''from mxnet.gluon.model_zoo import vision
-    alexnet = vision.alexnet(pretrained=True)
+    model = vision.alexnet(pretrained=True)
 
     model_name = "alexnet"
     model_source = "mxnet"
@@ -117,7 +117,7 @@ if workload == "alexnet":
     input_shape = [3,224,224]'''
     model_name = "alexnet"
     model_source = "keras"
-    input_name = "datinput_1a"
+    input_name = "input_1"
     input_shape = [3,224,224]
     
     img_inputs = keras.Input(shape=(224, 224, 3))
@@ -252,7 +252,7 @@ for batch_size in batch_sizes:
     bn_input_shape = [batch_size] + input_shape
     shape_dict = {input_name: tuple(bn_input_shape)}
     if model_source == "mxnet":
-        mod, params = relay.frontend.from_mxnet(alexnet, shape_dict)
+        mod, params = relay.frontend.from_mxnet(model, shape_dict)
     elif model_source == "keras":
         mod, params = relay.frontend.from_keras(model, shape_dict)
     print(model_name, "converted to Relay")
@@ -301,13 +301,13 @@ for batch_size in batch_sizes:
     min_layer_time = float("inf")
     min_time_name = ""
     for layer, measured in layers.items():
-        if measured["time"] < min_layer_time and measured["func_name"] != "param":
+        if measured["time"] < min_layer_time and measured["func_name"] != "param" and not "flatten" in layer:
             min_layer_time = measured["time"]
             min_time_name = layer
 
     print("min layer time:", min_time_name, "with:", min_layer_time)
-    runs = int(max(1, np.ceil(time_min_res / (min_layer_time/1000))))
-    print("required repitions to get acceptable power measurement precision:", runs)
+    #runs = int(max(1, np.ceil(time_min_res / (min_layer_time/1000))))
+    #print("required repitions to get acceptable power measurement precision:", runs)
 
     required = int(np.prod(bn_input_shape))
     rand_data = np.random.rand(int(np.ceil(required/repeat)))
@@ -320,7 +320,7 @@ for batch_size in batch_sizes:
     while time.monotonic() < t_end:
         # run debug runtime without profiling as burn in
         with suppress_stdout():
-            test_data = debug_g_mod.profile(collectors=[], runs=runs, **inp_dict)
+            test_data = debug_g_mod.profile(collectors=[], min_resolution=1/6, **inp_dict)
 
     p_start = time.monotonic()
     for r in range(0, iterations):        
@@ -329,9 +329,9 @@ for batch_size in batch_sizes:
         
         # run debug runtime with time measurements only
         with suppress_stdout():
-            test_data = debug_g_mod.profile(collectors=[data_collector], runs=runs, **inp_dict)
+            test_data = debug_g_mod.profile(collectors=[data_collector], min_resolution=1/6, **inp_dict)
             #test_data = debug_g_mod.profile(collectors=[], runs=runs, **inp_dict)
-
+        print(r)
         for call in test_data.calls:
             #print(call)
             #input()
