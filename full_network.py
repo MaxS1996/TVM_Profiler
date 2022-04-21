@@ -47,7 +47,10 @@ workload = "alexnet"
 workload_options = [
     "alexnet",
     "darknet",
+    "mobilenetV1",
     "mnist_net",
+    "modified_darknet",
+    "resnet50"
     ]
 
 supported_targets = [
@@ -70,7 +73,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument(
         "-w",
         "--workload",
-        default="darknet",
+        default="mobilenetV1",
         help="The network")
     options = parser.parse_args(args)
     return options
@@ -106,6 +109,12 @@ elif partition == "test":
     from config_test import *
 
 #####################################################
+memory_begin = 0
+if "cuda" in target_class:
+    from pynvml.smi import nvidia_smi
+    nvsmi = nvidia_smi.getInstance()
+    
+    memory_begin = nvsmi.DeviceQuery('memory.free, memory.total')
 
 if workload == "alexnet":
     '''from mxnet.gluon.model_zoo import vision
@@ -195,52 +204,81 @@ if workload == "darknet":
     x = Conv2D(filters=32, kernel_size=(3,3), strides=(1,1), padding='valid', input_shape=(224,224,3))(img_inputs)
     x = Activation('relu')(x)
     x = MaxPooling2D((2, 2))(x)
-    x = Conv2D(filters=64, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Conv2D(filters=64, kernel_size=(3,3), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
     x = MaxPooling2D((2, 2))(x)
 
-    x = Conv2D(filters=128, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Conv2D(filters=128, kernel_size=(3,3), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
-    x = Conv2D(filters=64, kernel_size=(1,1), strides=(1,1), padding='valid')(x)
+    x = Conv2D(filters=64, kernel_size=(1,1), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
-    x = Conv2D(filters=128, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
-    x = Activation('relu')(x)
-    x = MaxPooling2D((2, 2))(x)
-
-    x = Conv2D(filters=256, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
-    x = Activation('relu')(x)
-    x = Conv2D(filters=128, kernel_size=(1,1), strides=(1,1), padding='valid')(x)
-    x = Activation('relu')(x)
-    x = Conv2D(filters=256, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Conv2D(filters=128, kernel_size=(3,3), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
     x = MaxPooling2D((2, 2))(x)
 
-    x = Conv2D(filters=512, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Conv2D(filters=256, kernel_size=(3,3), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
-    x = Conv2D(filters=256, kernel_size=(1,1), strides=(1,1), padding='valid')(x)
+    x = Conv2D(filters=128, kernel_size=(1,1), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
-    x = Conv2D(filters=512, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Conv2D(filters=256, kernel_size=(3,3), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
-    x = Conv2D(filters=256, kernel_size=(1,1), strides=(1,1), padding='valid')(x)
+    x = MaxPooling2D((2, 2))(x)
+
+    x = Conv2D(filters=512, kernel_size=(3,3), strides=(1,1), padding='same')(x)
+    x = Activation('relu')(x)
+    x = Conv2D(filters=256, kernel_size=(1,1), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
     x = Conv2D(filters=512, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
     x = Activation('relu')(x)
+    x = Conv2D(filters=256, kernel_size=(1,1), strides=(1,1), padding='same')(x)
+    x = Activation('relu')(x)
+    x = Conv2D(filters=512, kernel_size=(3,3), strides=(1,1), padding='valid')(x)
+    x = Activation('relu')(x)
     x = MaxPooling2D((2, 2))(x)
 
-    x = Conv2D(filters=1000, kernel_size=(1,1), strides=(1,1), padding='valid')(x)
+    x = Conv2D(filters=1000, kernel_size=(1,1), strides=(1,1), padding='same')(x)
     x = Activation('relu')(x)
     x = GlobalAveragePooling2D()(x)
     x = Activation('softmax')(x)
 
     model = keras.Model(inputs=[img_inputs], outputs=x, name="darknet")
 
-#model.summary()
+if workload == "mobilenetV1":
+    model_name = "MobileNetV1"
+    model_source = "keras"
+    input_name = "input_1"
+    input_shape = [3,224,224]
+    
+    model = keras.applications.MobileNet(input_shape=(224,224,3), weights="imagenet")
+    #img_inputs = keras.Input(shape=(224, 224, 3))
+    #x = Conv2D(filters=32, kernel_size=(3,3), strides=(2,2), padding='valid')(img_inputs)
+    #x = Activation('relu')(x)
 
+    batch_sizes = [192]
 
+if workload == "resnet50":
+    model_name = "ResNet50V2"
+    model_source = "keras"
+    input_name = "input_1"
+    input_shape = [3,224,224]
+
+    model = keras.applications.ResNet50V2(
+    include_top=True,
+    weights="imagenet",
+    )
+    batch_sizes = [192]
+
+if model_source == "keras":
+    model.summary()
+    print("input layer:", model.layers[0].name)
+#exit()
+
+measured_times = {}
+batch_sizes = [16]
 #################### Network has been converted - Next Step: Compile
 for batch_size in batch_sizes:
-    file = dataset_path+"/"+target_class+"_"+device+"/test_set/"+model_name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+".json"
-
+    file = dataset_path+"/"+target_class+"_"+device+"/test_set/"+model_name.replace(":", "-").replace("/","_")+"_"+str(batch_size)+"_timing.json"
+    print(batch_size)
     folders = file.split("/")[0:-1]
     tmp = folders[0]
     
@@ -251,18 +289,28 @@ for batch_size in batch_sizes:
 
     bn_input_shape = [batch_size] + input_shape
     shape_dict = {input_name: tuple(bn_input_shape)}
+    t_trans_start = time.process_time()
     if model_source == "mxnet":
         mod, params = relay.frontend.from_mxnet(model, shape_dict)
     elif model_source == "keras":
         mod, params = relay.frontend.from_keras(model, shape_dict)
+        #mod, params = relay.frontend.from_keras(model)
+    t_trans_stop = time.process_time()
+    measured_times["transform"] = t_trans_stop - t_trans_start
     print(model_name, "converted to Relay")
 
+    print(measured_times)
+    
+    t_compile_start = time.process_time()
     with tvm.transform.PassContext(opt_level=3):
         print(target_class)
         compiled_graph_lib = tvm.relay.build_module.build(mod, target_class, params=params)
         #compiled_graph_lib = relay.build_module.create_executor("graph", mod, dev, target_class, params)
-
+    t_compile_stop = time.process_time()
+    measured_times["compile"] = t_compile_stop - t_compile_start
     print("compiled the model")
+
+    print(measured_times)
 
     debug_g_mod = graph_runtime.GraphModuleDebug(
         compiled_graph_lib["debug_create"]("default", dev),
@@ -271,11 +319,13 @@ for batch_size in batch_sizes:
         "."
     )
 
-    t_start  = time.monotonic()
+    t_start  = time.process_time()
     times = debug_g_mod.run_individual(10, 3, 1000)
-    t_end = time.monotonic()
+    t_end = time.process_time()
+    measured_times["measure_time"] = t_end - t_start
     print("time-only layer-wise measurement took:",t_end - t_start)
     print()
+    print(measured_times)
 
     layers = {}
     layer_order = []
@@ -289,13 +339,15 @@ for batch_size in batch_sizes:
         layers[node["name"]] = {
             "time" : float(times[idx])*1000,
             "func_name" : func_name,
-            "hash" : hash_val
+            "hash" : hash_val,
+            "pos" : idx
         }
         layer_order.append(node["name"])
     print("measured", len(layers), "individual layers")
 
     print("end2end time measurement")
     full_time = debug_g_mod.benchmark(dev, repeat=10, number=3, end_to_end=True).median
+    print("\ttotal inference time:",full_time)
     print("TIME MEASUREMENT COMPLETED")
 
     min_layer_time = float("inf")
@@ -317,6 +369,8 @@ for batch_size in batch_sizes:
     t_burn_in = 5
     t_start = time.monotonic()
     t_end = t_start + t_burn_in
+
+    t_1  = time.process_time()
     while time.monotonic() < t_end:
         # run debug runtime without profiling as burn in
         with suppress_stdout():
@@ -342,8 +396,13 @@ for batch_size in batch_sizes:
                 if not metric in layers[call["Name"]].keys():
                     layers[call["Name"]][metric] = []
                 layers[call["Name"]][metric].append(call[metric].value)
-    
-    print(layers)
+    t_2  = time.process_time()
+    measured_times["measure_power"] = t_2 - t_1
+
+    print(measured_times)
+
+
+    #print(layers)
     print("batch size done")
 
     collected_data = {
@@ -354,9 +413,13 @@ for batch_size in batch_sizes:
         "data" : layers,
         "order" : layer_order,
         "total_time" : full_time,
+        "memory_before" : memory_begin,
+        "time_spent": measured_times,
     }
+    print(measured_times)
 
     json_text = json.dumps(collected_data)
     with open(file, "w") as f:
         f.write(json_text)
+    exit()
     #exit()
